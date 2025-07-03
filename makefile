@@ -38,7 +38,7 @@ $(OUT_DIRECTORY)/%.o:
 	$(CC) -c -o $@ $(SRCS_by_OBJ_$@) $(FLAGS); \
 	else \
 	echo "\033[33mBuilding $(SRCS_by_OBJ_$@) -> $@\033[0m"; \
-	$(CXX) -c -o $@ $(OUT_DIRECTORY)/imp_alloc.o $(SRCS_by_OBJ_$@) $(FLAGS); \
+	$(CXX) -c -o $@ $(SRCS_by_OBJ_$@) $(FLAGS); \
 	fi
 
 TEST_OUTPUTS := $(TEST_FILES:.eml=.test)
@@ -48,4 +48,4 @@ test: $(TEST_OUTPUTS)
 
 %.test: %.eml
 	@echo "Testing $<"
-	./$(TARGET) $<
+	./$(TARGET) -i $<

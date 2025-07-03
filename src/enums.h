@@ -18,8 +18,6 @@ typedef enum
 typedef enum
 {
     // built-ins
-    TOKEN_PRINT,
-    TOKEN_PRINTLN,
     TOKEN_KINT,      // as a word
     TOKEN_KSTRING,
 
@@ -28,6 +26,7 @@ typedef enum
     TOKEN_STRING,
     TOKEN_FLOAT,
     TOKEN_CHAR,
+    TOKEN_IDENTIFIER,
     
     // keyword
     TOKEN_IF,
@@ -50,4 +49,24 @@ typedef enum
     TOKEN_OPEN_PAREN,
     TOKEN_CLOSE_PAREN,
     TOKEN_SEMI,
+
+    TOKEN_EOF,
 } TokenKind;
+
+typedef enum
+{
+    EXPR_ASSIGN,
+    EXPR_CALL,
+    EXPR_IDENT,
+    EXPR_STRING,
+    EXPR_INT,
+    EXPR_FLOAT,
+} ExprKind;
+
+typedef enum
+{
+    VALUE_STRING,
+    VALUE_INT,
+    VALUE_ERROR,
+    VALUE_LIST,
+} ValueKind;

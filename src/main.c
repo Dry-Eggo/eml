@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "options.h"
 #include "imp_alloc.h"
+#include "interpreter.h"
 
 ImpArena *arena = NULL;
 
@@ -27,8 +28,12 @@ int main(int argc, char** argv)
     {
 	case RUN_SHOW_HELP:
 	    show_help(opt);
-	    return 0;
+	    break;
+	case RUN_FILE:
+	    interpret(&opt);
+	    break;
 	default:
 	    break;
     }
+    imp_arena_free(arena);
 }

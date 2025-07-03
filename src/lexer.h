@@ -15,11 +15,12 @@ typedef struct
     TokenList*   tokens;
 } Lexer;
 
-Token make_token   (TokenKind kind, const char* lexme, Span span);
-Span  make_span    (int line, int column, int offset);
-Span  merge_span   (Span s1, Span s2);
-
-Lexer*  lexer_init   (Options* options);
-char    lexer_peek   (Lexer* lexer);
-char    lexer_now    (Lexer* lexer);
-void    lexer_advance(Lexer* lexer);
+Lexer*  lexer_init         (Options* options);
+char    lexer_peek         (Lexer* lexer);
+char    lexer_now          (Lexer* lexer);
+char    lexer_advance      (Lexer* lexer);
+void    lexer_lex          (Lexer* lexer);
+void    lexer_skip_ws      (Lexer* lexer);
+void    lexer_parse_word   (Lexer* lexer);
+void    lexer_parse_number (Lexer* lexer);
+void    lexer_parse_string (Lexer* lexer);

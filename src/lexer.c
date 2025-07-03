@@ -2,6 +2,11 @@
 #include "imp_alloc.h"
 #include "global.h"
 #include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#define TMP_BUFFER_SIZE 256
 
 Lexer*  lexer_init   (Options* options)
 {
@@ -12,13 +17,22 @@ Lexer*  lexer_init   (Options* options)
     lexer->col     = 1;
     lexer->tokens  = make_tokenlist();
 
-    
-    
+    lexer->source  = readAllFile(options->infile);
+    lexer_lex(lexer);
     return lexer;
 }
 
 
 char    lexer_peek   (Lexer* lexer)
+{
+    if (lexer->cursor + 1 < strlen(lexer->source))
+    {
+	return lexer->source[lexer->cursor + 1];
+    }
+    return EOF;
+}
+
+char    lexer_now    (Lexer* lexer)
 {
     if (lexer->cursor >= strlen(lexer->source))
     {
@@ -27,10 +41,101 @@ char    lexer_peek   (Lexer* lexer)
     return lexer->source[lexer->cursor];
 }
 
-char    lexer_now    (Lexer* lexer)
+char    lexer_advance(Lexer* lexer)
 {
+    char ch = lexer_now(lexer);
+    if (ch == '\n')
+    {
+	lexer->line++;
+	lexer->col = 1;
+    }
+    else lexer->col++;
+    lexer->cursor++;
+    return ch;
 }
 
-void    lexer_advance(Lexer* lexer)
+void lexer_lex(Lexer* lexer)
 {
+    while (lexer_now(lexer) != EOF)
+    {
+	lexer_skip_ws(lexer);
+	if (lexer_now(lexer) != EOF && (isalpha(lexer_now(lexer)) || lexer_now(lexer) == '_'))
+	{
+	    lexer_parse_word(lexer);
+	    continue;
+	}
+	if (lexer_now(lexer) != EOF && (lexer_now(lexer) == '\"'))
+	{
+	    lexer_parse_string(lexer);
+	    continue;
+	}
+	
+	int sc = lexer->col;
+	switch(lexer_now(lexer))
+	{
+	    case '(':
+		lexer_advance(lexer);
+		tokenlist_add(lexer->tokens, make_token(TOKEN_OPEN_PAREN, "(", make_span(lexer->line, sc, lexer->col-1)));
+		break;
+	    case ')':
+		lexer_advance(lexer);
+		tokenlist_add(lexer->tokens, make_token(TOKEN_CLOSE_PAREN, ")", make_span(lexer->line, sc, lexer->col-1)));
+		break;
+	    case ';':
+		lexer_advance(lexer);
+		tokenlist_add(lexer->tokens, make_token(TOKEN_SEMI, ";", make_span(lexer->line, sc, lexer->col-1)));
+		break;
+	    default:
+		char buf[64];
+		sprintf(buf, "Unknown Character: '%c'", lexer_now(lexer));
+		early_fail(make_error(ERROR_FATAL, buf, 1));
+		break;
+	}
+	if (lexer_now(lexer) == EOF) break;
+    }
+    tokenlist_add(lexer->tokens, make_token(TOKEN_EOF, "<eof>", make_span(lexer->line, lexer->col-1, lexer->col)));
 }
+
+void lexer_skip_ws(Lexer* lexer)
+{
+    while (isspace(lexer_now(lexer)))
+    {
+	lexer_advance(lexer);
+    }
+}
+
+void lexer_parse_word(Lexer* lexer)
+{
+    char buffer[TMP_BUFFER_SIZE] = {0};
+    int  inx        = 0;
+    int  sc         = lexer->col;
+    int  line       = lexer->line;
+    while (lexer_now(lexer) != EOF && (isalnum(lexer_now(lexer)) || lexer_now(lexer) == '_'))
+    {
+	// TODO: dynamic sized buffer
+	buffer[inx++] = lexer_advance(lexer);
+    }
+    buffer[inx++] = '\0';
+    Span span = make_span(line, sc, lexer->col-1);
+    if (strcmp(buffer, "if") == 0) tokenlist_add(lexer->tokens, make_token(TOKEN_IF, imp_arena_strdup(arena, buffer), span));
+    else if (strcmp(buffer, "for") == 0) tokenlist_add(lexer->tokens, make_token(TOKEN_FOR, imp_arena_strdup(arena, buffer), span));
+    else tokenlist_add(lexer->tokens, make_token(TOKEN_IDENTIFIER, imp_arena_strdup(arena, buffer), span));
+}
+void    lexer_parse_string (Lexer* lexer)
+{
+    lexer_advance(lexer);
+    char buffer[TMP_BUFFER_SIZE] = {0};
+    int  inx                     = 0;
+    int  sc                      = lexer->col;
+    int  line                    = lexer->line;
+    while (lexer_now(lexer) != '\"')
+    {
+	buffer[inx++] = lexer_advance(lexer);
+    }
+    if (lexer_now(lexer) == '\"')
+    {
+	lexer_advance(lexer);
+    }
+    tokenlist_add(lexer->tokens, make_token(TOKEN_STRING, imp_arena_strdup(arena, buffer), make_span(line, sc, lexer->col-1)));
+}
+void    lexer_parse_number (Lexer* lexer);

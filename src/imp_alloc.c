@@ -29,7 +29,8 @@ ImpArena* imp_arena_init(size_t capacity)
 char *imp_arena_strdup(ImpArena* arena, char* str)
 {
     size_t len = strlen(str);
-    char*  dup = imp_arena_alloc(arena, len);
+    char*  dup = imp_arena_alloc(arena, len+1);
+    dup[len+1] = '\0';
     memcpy(dup, str, len);
     return dup;
 }
