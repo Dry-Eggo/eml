@@ -26,7 +26,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJ) $(OUT_DIRECTORY)/main.o
 	@echo "\033[33mBuilding $@\033[0m"
-	$(CXX) -o $@ $(OUT_DIRECTORY)/main.o $(OBJ) $(FLAGS)
+	@$(CXX) -o $@ $(OUT_DIRECTORY)/main.o $(OBJ) $(FLAGS)
 
 $(OUT_DIRECTORY)/main.o:
 	@echo "\033[33mBuilding $@\033[0m"

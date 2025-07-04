@@ -6,165 +6,212 @@
 #define pnow(p) parser_now(p)
 
 Parser *parser_init(Options *options, const char *source, TokenList *list) {
-  Parser *parser = imp_arena_alloc(arena, sizeof(Parser));
-  parser->options = options;
-  parser->cursor = 0;
-  parser->program = make_astlist();
-  parser->source = source;
-  parser->tokens = list;
-  parser->token_count = tokenlist_size(parser->tokens);
-  parser_parse(parser);
-  return parser;
+    Parser *parser = imp_arena_alloc(arena, sizeof(Parser));
+    parser->options = options;
+    parser->cursor = 0;
+    parser->program = make_astlist();
+    parser->source = source;
+    parser->tokens = list;
+    parser->token_count = tokenlist_size(parser->tokens);
+    parser_parse(parser);
+    return parser;
 }
 
 Token parser_peek(Parser *parser) {
-  if (parser->cursor + 1 < parser->token_count) {
-    return tokenlist_get(parser->tokens, parser->cursor + 1);
-  }
-  // Last token is always set to TOKEN_EOF
-  return tokenlist_get(parser->tokens, parser->token_count - 1);
+    if (parser->cursor + 1 < parser->token_count) {
+	return tokenlist_get(parser->tokens, parser->cursor + 1);
+    }
+    // Last token is always set to TOKEN_EOF
+    return tokenlist_get(parser->tokens, parser->token_count - 1);
 }
 
 Token parser_now(Parser *parser) {
-  if (parser->cursor < parser->token_count) {
-    return tokenlist_get(parser->tokens, parser->cursor);
-  }
-  return tokenlist_get(parser->tokens, parser->token_count - 1);
+    if (parser->cursor < parser->token_count) {
+	return tokenlist_get(parser->tokens, parser->cursor);
+    }
+    return tokenlist_get(parser->tokens, parser->token_count - 1);
 }
 
 void parser_advance(Parser *parser) { parser->cursor++; }
 
 void parser_expect(Parser *parser, TokenKind k) {
-  if (pnowk(parser) != k) {
-    char buf[64];
-    sprintf(buf, "%s:%d:%d error: Unexpected token: '%s'",
-            parser->options->infile, pnow(parser).span.line,
-            pnow(parser).span.column, pnow(parser).lexme);
-    early_fail(make_error(ERROR_FATAL, buf, 1));
-  }
-  parser_advance(parser);
+    if (pnowk(parser) != k) {
+	char buf[64];
+	sprintf(buf, "%s:%d:%d error: Unexpected token: '%s'",
+        parser->options->infile, pnow(parser).span.line,
+        pnow(parser).span.column, pnow(parser).lexme);
+	early_fail(make_error(ERROR_FATAL, buf, 1));
+    }
+    parser_advance(parser);
 }
 
 bool parser_match(Parser *parser, TokenKind k) {
-  if (pnowk(parser) != k) {
-    return false;
-  }
-  return true;
+    if (pnowk(parser) != k) {
+	return false;
+    }
+    return true;
 }
 
 void parser_parse(Parser *parser) {
-  while (pnowk(parser) != TOKEN_EOF) {
-    // defaults to try and parse an expression
-    // non-expression statments are
-    //        ---------------------------------
-    //     1 | import core;
-    //     2 | module foo;
-    //     3 |
-    //     4 |
-    switch (pnowk(parser)) {
-    default: {
-      AstNode *expr = parse_expr(parser);
-      parser_expect(parser, TOKEN_SEMI);
-      astlist_add(parser->program, expr);
-    } break;
+    while (pnowk(parser) != TOKEN_EOF) {
+	// defaults to try and parse an expression
+	// non-expression statments are
+	//        ---------------------------------
+	//     1 | import core;
+	//     2 | module foo;
+	//     3 |
+	//     4 |
+	switch (pnowk(parser)) {
+	default: {
+	    AstNode *expr = parse_expr(parser);
+	    if (expr->kind != EXPR_IF) parser_expect(parser, TOKEN_SEMI);
+	    astlist_add(parser->program, expr);
+	} break;
     }
-  }
+}
+}
+
+AstNode* parse_body(Parser*  parser) {
+    Span start = pnow(parser).span;
+    AstList* body = make_astlist();
+    while (!parser_match(parser, TOKEN_EOF) && !parser_match(parser, TOKEN_END) && !parser_match(parser, TOKEN_ELSE)) {
+	AstNode* expr = parse_expr(parser);
+	if (expr->kind != EXPR_IF) parser_expect(parser, TOKEN_SEMI);
+	astlist_add(body, expr);
+    }
+    Span end = pnow(parser).span;
+    return make_body_node(body, merge_span(start, end));
 }
 
 AstNode *parse_expr(Parser *parser) {
-  // TODO: add parse chain
-  return parse_logical_or(parser);
+    // TODO: add parse chain
+    return parse_logical_or(parser);
 }
 
 AstNode *parse_logical_or(Parser *parser) {
-  AstNode *lhs = parse_logical_and(parser);
-  return lhs;
+    AstNode *lhs = parse_logical_and(parser);
+    return lhs;
 }
 AstNode *parse_logical_and(Parser *parser) {
-  AstNode *lhs = parse_additive(parser);
-  return lhs;
+    AstNode *lhs = parse_additive(parser);
+    return lhs;
 }
 
 AstNode *parse_additive(Parser *parser) {
-  Span start = pnow(parser).span;
-  AstNode *lhs = parse_term(parser);
-  while (parser_match(parser, TOKEN_ADD) || parser_match(parser, TOKEN_SUB)) {
-    BinaryOp op = (pnowk(parser) == TOKEN_SUB) ? BINOP_SUB : BINOP_ADD;
-    parser_advance(parser);
-    AstNode *rhs = parse_expr(parser);
-    Span end = pnow(parser).span;
-    lhs = make_binary_op(lhs, rhs, op, merge_span(start, end));
-  }
-  return lhs;
+    Span start = pnow(parser).span;
+    AstNode *lhs = parse_term(parser);
+    while (parser_match(parser, TOKEN_ADD) || parser_match(parser, TOKEN_SUB)) {
+	BinaryOp op = (pnowk(parser) == TOKEN_SUB) ? BINOP_SUB : BINOP_ADD;
+	parser_advance(parser);
+	AstNode *rhs = parse_expr(parser);
+	Span end = pnow(parser).span;
+	lhs = make_binary_op(lhs, rhs, op, merge_span(start, end));
+    }
+    return lhs;
 }
 
 AstNode *parse_term(Parser *parser) {
-  AstNode *lhs = parse_postfix(parser);
-  return lhs;
+    AstNode *lhs = parse_postfix(parser);
+    return lhs;
 }
 
 AstNode *parse_postfix(Parser *parser) {
-  Span start = pnow(parser).span;
-  AstNode *lhs = parse_atom(parser);
-  if (parser_match(parser, TOKEN_EQ))
-  {
-    parser_advance(parser);
-    AstNode* value = parse_expr(parser);
-    Span end = pnow(parser).span;
-    return make_binding_node(lhs, value, false, merge_span(start, end));
-  }
-  while (parser_match(parser, TOKEN_DOT)) {
-    if (pnowk(parser) == TOKEN_DOT) {
-      parser_advance(parser);
-      AstNode *field = parse_expr(parser);
-      Span end = pnow(parser).span;
-      return make_field_access(lhs, field, merge_span(start, end));
+    Span start = pnow(parser).span;
+    AstNode *lhs = parse_atom(parser);
+    if (parser_match(parser, TOKEN_EQ))
+    {
+	parser_advance(parser);
+	AstNode* value = parse_expr(parser);
+	Span end = pnow(parser).span;
+	return make_binding_node(lhs, value, false, merge_span(start, end));
     }
-  }
-  return lhs;
+    while (parser_match(parser, TOKEN_DOT)) {
+	if (pnowk(parser) == TOKEN_DOT) {
+	    parser_advance(parser);
+	    AstNode *field = parse_expr(parser);
+	    Span end = pnow(parser).span;
+	    lhs = make_field_access(lhs, field, merge_span(start, end));
+	}
+    }
+    return lhs;
 }
 
 AstNode *parse_atom(Parser *parser) {
-  Token tok = pnow(parser);
-  if (tok.kind == TOKEN_IDENTIFIER) {
-    Span start = tok.span;
-    const char *identifier = tok.lexme;
-    parser_advance(parser);
-    AstNode *ident_node = make_ident_node(identifier, start);
-    if (pnowk(parser) == TOKEN_OPEN_PAREN) {
-      parser_advance(parser);
-      AstList *args = make_astlist();
-      while (pnowk(parser) != TOKEN_CLOSE_PAREN) {
-        astlist_add(args, parse_expr(parser));
-        if (parser_match(parser, TOKEN_COMMA))
-        {
-          parser_advance(parser);
-        }
-      }
-      parser_expect(parser, TOKEN_CLOSE_PAREN);
-      Span end = pnow(parser).span;
-      return make_call_node(ident_node, args, merge_span(start, end));
+    Token tok = pnow(parser);
+    if (tok.kind == TOKEN_IDENTIFIER) {
+	Span start = tok.span;
+	const char *identifier = tok.lexme;
+	parser_advance(parser);
+	AstNode *ident_node = make_ident_node(identifier, start);
+	if (pnowk(parser) == TOKEN_OPEN_PAREN) {
+	    parser_advance(parser);
+	    AstList *args = make_astlist();
+	    while (pnowk(parser) != TOKEN_CLOSE_PAREN) {
+		astlist_add(args, parse_expr(parser));
+		if (parser_match(parser, TOKEN_COMMA))
+		{
+		    parser_advance(parser);
+		}
+	    }
+	    Span end = pnow(parser).span;
+	    parser_expect(parser, TOKEN_CLOSE_PAREN);
+	    return make_call_node(ident_node, args, merge_span(start, end));
+	}
+
+	return ident_node;
+    }
+    if (tok.kind == TOKEN_IF) {
+	Span start = tok.span;
+	parser_advance(parser);
+	AstNode* cond = parse_expr(parser);
+	AstNode* body = NULL;
+	AstNode* else_ = NULL;
+	if (parser_match(parser, TOKEN_THEN)) {
+	    parser_advance(parser);
+	    if (parser_match(parser, TOKEN_COLON)) {
+		parser_advance(parser);
+		body = parse_body(parser);
+	    }
+	    if (parser_match(parser, TOKEN_END)) {
+		Span end = pnow(parser).span;
+		parser_advance(parser);
+		return make_if_node(cond, body, else_, merge_span(start, end));
+	    }
+	    if (parser_match(parser, TOKEN_ELSE)) {
+		parser_advance(parser);
+		if (parser_match(parser, TOKEN_IF)) {
+		    AstNode* nested_if = parse_expr(parser);
+		    AstList* b_ = make_astlist();
+		    astlist_add(b_, nested_if);
+		    Span end = pnow(parser).span;
+		    else_ = make_body_node(b_, merge_span(start, end));
+		    return make_if_node(cond, body, else_, merge_span(start, end));
+		}
+		parser_expect(parser, TOKEN_COLON);
+		else_ = parse_body(parser);
+		Span end = pnow(parser).span;
+		parser_expect(parser, TOKEN_END);
+		return make_if_node(cond, body, else_, merge_span(start, end));
+	    }
+	}
+    }
+    if (tok.kind == TOKEN_STRING) {
+	Span start = tok.span;
+	const char *string = tok.lexme;
+	parser_advance(parser);
+	return make_string_node(string, start);
+    }
+    if (tok.kind == TOKEN_INT) {
+	Span span_start = tok.span;
+	int value = strtol(tok.lexme, NULL, 0);
+	parser_advance(parser);
+	return make_int_node(value, span_start);
     }
 
-    return ident_node;
-  }
-  if (tok.kind == TOKEN_STRING) {
-    Span start = tok.span;
-    const char *string = tok.lexme;
-    parser_advance(parser);
-    return make_string_node(string, start);
-  }
-  if (tok.kind == TOKEN_INT) {
-    Span span_start = tok.span;
-    int value = strtol(tok.lexme, NULL, 0);
-    parser_advance(parser);
-    return make_int_node(value, span_start);
-  }
-
-  char buf[64];
-  sprintf(buf, "%s:%d:%d error: Unexpected token: '%s'", parser->options->infile,
-          pnow(parser).span.line, pnow(parser).span.column, pnow(parser).lexme);
-  early_fail(make_error(ERROR_FATAL, buf, 1));
-  /* UNREACHABLE */
-  return NULL;
+    char buf[64];
+    sprintf(buf, "%s:%d:%d error: Unexpected token: '%s'", parser->options->infile,
+    pnow(parser).span.line, pnow(parser).span.column, pnow(parser).lexme);
+    early_fail(make_error(ERROR_FATAL, buf, 1));
+    /* UNREACHABLE */
+    return NULL;
 }

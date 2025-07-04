@@ -14,3 +14,4 @@ Span  merge_span   (Span s1, Span s2)
 {
     return make_span(s1.line, s1.column, s2.colend);
 }
+

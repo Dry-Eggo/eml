@@ -1,0 +1,14 @@
+
+print("---------------- If Else Test ----------------\n");
+
+if 0 then:
+   core.print("If Statement with body\n");
+else:
+   core.print("Else Statement\n");
+end
+
+if 1 then:
+   core.print("Anther Successful if\n");
+end
+
+print("----------------------------------------------\n");

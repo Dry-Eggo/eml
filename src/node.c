@@ -64,3 +64,23 @@ AstNode *make_int_node(int value, Span s) {
   node->span = s;
   return node;
 }
+
+AstNode* make_body_node(AstList* b, Span s) {
+  AstNode *node = imp_arena_alloc(arena, sizeof(AstNode));
+  node->kind = EXPR_BODY;
+  node->body.body = b;
+  node->span = s;
+  return node;    
+}
+
+AstNode* make_if_node(AstNode* cond, AstNode* then, AstNode* else_, Span s) {
+  AstNode *node = imp_arena_alloc(arena, sizeof(AstNode));
+  node->kind = EXPR_IF;
+  node->if_expr.cond = cond;
+  node->if_expr.then_body = then;
+  node->if_expr.else_body = else_;
+  node->span = s;
+  return node;        
+}
+
+AstNode* make_brace_body_node(AstList* b, Span s);

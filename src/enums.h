@@ -34,9 +34,13 @@ typedef enum
     TOKEN_FOR,
     TOKEN_LOOP,
     TOKEN_MATCH,
+    TOKEN_THEN,
+    TOKEN_END,
+    TOKEN_ELSE,
 
     // operators
     TOKEN_EQ,
+    TOKEN_COLEQ, // :=
     TOKEN_ADD,
     TOKEN_SUB,
     TOKEN_MUL,
@@ -51,6 +55,7 @@ typedef enum
     TOKEN_SEMI,
     TOKEN_DOT,
     TOKEN_COMMA,
+    TOKEN_COLON,
 
     TOKEN_EOF,
 } TokenKind;
@@ -65,6 +70,9 @@ typedef enum
     EXPR_FLOAT,
     EXPR_FIELD_ACCESS,
     EXPR_BINOP,
+    EXPR_BRACE_BODY,
+    EXPR_BODY,
+    EXPR_IF,
 } ExprKind;
 
 typedef enum
@@ -83,5 +91,6 @@ typedef enum
     VALUE_LIST,
     VALUE_NIL,
     VALUE_NATIVEFN,
+    VALUE_VARIABLE,
     VALUE_MODULE,
 } ValueKind;

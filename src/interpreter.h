@@ -11,6 +11,7 @@ typedef struct Runtime {
   Env *current_env;
   StackList* stacklist;
   SourceManger* source_manager;
+  StackFrame* current_frame;
 } Runtime;
 
 void interpret(Options *opt);
@@ -19,6 +20,8 @@ Error *init_env();
 Value* eval_node(AstNode *node);
 void runtime_error(Span s, const char* message, const char* hint);
 Value *generate_value(AstNode *node);
-Value *eval_call(struct ExprCall call);
+Value *eval_call(struct ExprCall call, Span node_span);
 Value* eval_assign(struct ExprBinding bind);
 Value* eval_field_access(struct ExprFieldAccess expr);
+Value* eval_if(struct ExprIf if_expr);
+Value* eval_body(struct ExprBody body);

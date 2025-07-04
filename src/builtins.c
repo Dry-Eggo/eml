@@ -23,13 +23,11 @@ Value *builtin_print(Env *env, ValueList *args) {
 
 Value* builtin_readFile(Env* env, ValueList* args)
 {
-  const char* path = value_to_string(valuelist_get(args, 0));
-  FILE* f = fopen(path, "r");
-  fseek(f, 0, SEEK_END);
-  int size = ftell(f);
-  rewind(f);
-  char* content = imp_arena_alloc(arena, size+1);
-  fread(content, size, 1, f);
-  printf("Content: %s\n", content);
-  return value_make_string(imp_arena_strdup(arena, content), make_span(1, 1, 0));
+    Value* path_value = valuelist_get(args, 0);
+    const char* path_string = value_to_string(path_value);
+    if (!file_exists(path_string)) {
+	return value_make_error("Path Does Not Exist", path_value->span);
+    }
+    const char* content = readAllFile(path_string);
+    return value_make_string(content, get_stackframe_span(runtime->current_frame));
 }

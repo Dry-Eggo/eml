@@ -40,6 +40,7 @@ int stacklist_size(StackList *);
 StackFrame *create_stackframe(Span span, const char *callee_name);
 void push_stack_frame(StackList *stl, StackFrame *frame);
 StackFrame *pop_stack_frame(StackList *stl);
+StackFrame *peek_stack_frame(StackList *stl);
 const char *get_stackframe_name(StackFrame *);
 Span get_stackframe_span(StackFrame *);
 
@@ -61,7 +62,8 @@ Module *load_system_module(Env *e, const char *name);
 /* -------------------------------------------- */
 
 /* ------------------ utils ------------------ */
-char *readAllFile(const char *path);
+char *readAllFile(const char* path);
+bool file_exists(const char* path);
 /* ------------------------------------------- */
 
 #ifdef __cplusplus
