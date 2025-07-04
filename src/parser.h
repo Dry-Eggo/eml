@@ -21,11 +21,12 @@ Token      parser_peek        (Parser*  parser);
 Token      parser_now         (Parser*  parser);
 void       parser_advance     (Parser*  parser);
 void       parser_expect      (Parser*  parser, TokenKind k);
-
+bool       parser_match       (Parser*  parser, TokenKind k);
 void       parser_parse       (Parser*  parser);
 AstNode*   parse_expr         (Parser*  parser);
 AstNode*   parse_atom         (Parser*  parser);
 AstNode*   parse_additive     (Parser*  parser);
 AstNode*   parse_term         (Parser*  parser);
+AstNode*   parse_postfix      (Parser*  parser);
 AstNode*   parse_logical_or   (Parser*  parser);
 AstNode*   parse_logical_and  (Parser*  parser);

@@ -47,5 +47,5 @@ test: $(TEST_OUTPUTS)
 	@echo "Done testing $(TEST_FILES)"
 
 %.test: %.eml
-	@echo "Testing $<"
-	./$(TARGET) -i $<
+	@echo "-- \033[33mTesting $<\033[0m"
+	@./$(TARGET) -i $<

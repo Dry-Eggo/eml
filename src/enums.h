@@ -49,6 +49,8 @@ typedef enum
     TOKEN_OPEN_PAREN,
     TOKEN_CLOSE_PAREN,
     TOKEN_SEMI,
+    TOKEN_DOT,
+    TOKEN_COMMA,
 
     TOKEN_EOF,
 } TokenKind;
@@ -61,7 +63,17 @@ typedef enum
     EXPR_STRING,
     EXPR_INT,
     EXPR_FLOAT,
+    EXPR_FIELD_ACCESS,
+    EXPR_BINOP,
 } ExprKind;
+
+typedef enum
+{
+    BINOP_ADD,
+    BINOP_SUB,
+    BINOP_MUL,
+    BINOP_DIV,
+} BinaryOp;
 
 typedef enum
 {
@@ -69,4 +81,7 @@ typedef enum
     VALUE_INT,
     VALUE_ERROR,
     VALUE_LIST,
+    VALUE_NIL,
+    VALUE_NATIVEFN,
+    VALUE_MODULE,
 } ValueKind;

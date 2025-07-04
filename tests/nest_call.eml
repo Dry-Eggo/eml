@@ -1,0 +1,4 @@
+
+core.println("This is the result of core.println");
+content = core.readFile("./hello.eml");
+println(content);
