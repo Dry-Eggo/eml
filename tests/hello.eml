@@ -1,3 +1,4 @@
 
-message = "Hello World\n";
+message := "Hello World\n";
+message = "Just Hello\n";
 print(message);

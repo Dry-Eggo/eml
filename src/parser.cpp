@@ -120,12 +120,13 @@ AstPtr parse_term(Parser *parser) {
 AstPtr parse_postfix(Parser *parser) {
     Span start = pnow(parser).span;
     auto lhs = parse_atom(parser);
-    if (parser_match(parser, TOKEN_EQ))
+    if (parser_match(parser, TOKEN_EQ) || parser_match(parser, TOKEN_COLEQ))
     {
+	bool mut = (pnowk(parser) == TOKEN_COLEQ)? true: false;
 	parser_advance(parser);
 	auto value = parse_expr(parser);
 	Span end = pnow(parser).span;
-	return make_binding_node(std::move(lhs), std::move(value), false, merge_span(start, end));
+	return make_binding_node(std::move(lhs), std::move(value), mut, merge_span(start, end));
     }
     while (parser_match(parser, TOKEN_DOT)) {
 	if (pnowk(parser) == TOKEN_DOT) {

@@ -83,12 +83,13 @@ void lexer_lex(Lexer *lexer) {
 	    tokenlist_add(lexer->tokens, make_token(TOKEN_SEMI, ";", make_span(lexer->line, sc, lexer->col - 1)));
 	    break;
 	case '=':
-	    lexer_advance(lexer);
+ 	    lexer_advance(lexer);
 	    tokenlist_add(lexer->tokens, make_token(TOKEN_EQ, "=", make_span(lexer->line, sc, lexer->col - 1)));
 	    break;
 	case ':':
 	    lexer_advance(lexer);
 	    if (lexer_now(lexer) == '=') {
+		lexer_advance(lexer);
 		tokenlist_add(lexer->tokens, make_token(TOKEN_COLEQ, ":=", make_span(lexer->line, sc, lexer->col - 1)));
 		break;
 	    }

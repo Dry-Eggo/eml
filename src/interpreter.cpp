@@ -8,6 +8,7 @@
 #include "token.h"
 #include "types.h"
 #include <string.h>
+#include <format>
 
 #define vu(type) std::unique_ptr<type>
 
@@ -110,8 +111,18 @@ Value *eval_assign(AstNode *bind) {
     auto &identifier = std::get<vu(ExprIdent)>(assign->lhs->data);
     auto name = identifier->identifier;
     Value *value = generate_value(assign->value.get());
+    bool is_const = (!assign->is_mut);
+    if (has_var(runtime->current_env, name.c_str())) {
+	auto var = get_var(runtime->current_env, name.c_str());
+	if (var->kind == VALUE_VARIABLE) {
+	    if (var->vvalue.is_const) {
+		auto message = std::format("'{}' was declared as constant", name);
+		_eml_runtime_error(bind->span, message.c_str(), NULL);
+	    }
+	}
+    }
     set_var(runtime->current_env, imp_arena_strdup(arena, name.data()),
-            value_make_variable(name, value, assign->lhs->span));
+            value_make_variable(name, value, is_const, assign->lhs->span));
   }
   return value_make_nil();
 }

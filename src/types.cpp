@@ -18,11 +18,12 @@ Value *value_make_string(std::string s, Span sp) {
   return val;
 }
 
-Value *value_make_variable(std::string name, Value *value, Span sp) {
+Value *value_make_variable(std::string name, Value *value, bool const_,  Span sp) {
   Value *val = (Value *)imp_arena_alloc(arena, sizeof(Value));
   val->kind = VALUE_VARIABLE;
   val->vvalue.name = name;
   val->vvalue.value = value;
+  val->vvalue.is_const = const_;
   val->span = sp;
   return val;
 }

@@ -25,6 +25,7 @@ typedef struct ErrorValue {
 
 typedef struct VariableValue {
     std::string  name;
+    bool is_const;
     struct Value_* value;
 } VariableValue;
 
@@ -50,7 +51,7 @@ Value *value_make_ref(Value *v);
 Value *value_make_nil();
 Value *value_make_module(std::string mod_name, Module* mod);
 Value *value_make_native_fn(std::string name, int argc, Value *(*fn)(Env *env, ValueList *args));
-Value *value_make_variable(std::string name, Value* value, Span sp);
+Value *value_make_variable(std::string name, Value* value, bool const_, Span sp);
 Value *value_add(Value *v1, Value *v2);
 bool  value_istruthy(Value* v);
 #ifdef __cplusplus

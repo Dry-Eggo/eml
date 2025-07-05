@@ -13,7 +13,7 @@ OBJ              := $(addprefix bin/, $(OBJ_NAMES:.c=.o))
 OBJ              := $(OBJ:.cpp=.o)
 
 MOBJ             := $(patsubst $(SOURCE_DIRECTORY)/%.c, $(OUT_DIRECTORY)/%.o, $(CPPSRC))
-FLAGS            := -g
+FLAGS            := -g -std=c++20
 
 define MAP_OBJ_TO_SRC $(foreach src, $(SRC), $(eval SRCS_by_OBJ_bin/$(notdir $(src:.c=.o)) := $(src)) $(eval SRCS_by_OBJ_bin/$(notdir $(src:.cpp=.o)) := $(src)))
 endef
