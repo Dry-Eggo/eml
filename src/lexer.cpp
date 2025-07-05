@@ -10,7 +10,7 @@
 #define TMP_BUFFER_SIZE 256
 
 Lexer *lexer_init(Options *options) {
-    Lexer *lexer = imp_arena_alloc(arena, sizeof(Lexer));
+    Lexer *lexer = (Lexer*)imp_arena_alloc(arena, sizeof(Lexer));
     lexer->options = options;
     lexer->cursor = 0;
     lexer->line = 1;
@@ -23,14 +23,14 @@ Lexer *lexer_init(Options *options) {
 }
 
 char lexer_peek(Lexer *lexer) {
-    if (lexer->cursor + 1 < strlen(lexer->source)) {
+    if (lexer->cursor + 1 < lexer->source.size()) {
 	return lexer->source[lexer->cursor + 1];
     }
     return EOF;
 }
 
 char lexer_now(Lexer *lexer) {
-    if (lexer->cursor >= strlen(lexer->source)) {
+    if (lexer->cursor >= lexer->source.size()) {
 	return EOF;
     }
     return lexer->source[lexer->cursor];
@@ -141,7 +141,7 @@ void lexer_lex(Lexer *lexer) {
     }
     tokenlist_add(lexer->tokens,
     make_token(TOKEN_EOF, "<eof>",
-    make_span(lexer->line, lexer->col - 1, lexer->col)));
+    make_span(lexer->line, lexer->col, lexer->col)));
 }
 
 void lexer_skip_ws(Lexer *lexer) {
@@ -151,23 +151,21 @@ void lexer_skip_ws(Lexer *lexer) {
 }
 
 void lexer_parse_word(Lexer *lexer) {
-    char buffer[TMP_BUFFER_SIZE] = {0};
-    int inx = 0;
+    std::string buffer;
     int sc = lexer->col;
     int line = lexer->line;
     while (lexer_now(lexer) != EOF &&
     (isalnum(lexer_now(lexer)) || lexer_now(lexer) == '_')) {
 	// TODO: dynamic sized buffer
-	buffer[inx++] = lexer_advance(lexer);
+	buffer += lexer_advance(lexer);
     }
-    buffer[inx++] = '\0';
     Span span = make_span(line, sc, lexer->col - 1);
-    if (strcmp(buffer, "if") == 0) tokenlist_add(lexer->tokens, make_token(TOKEN_IF, imp_arena_strdup(arena, buffer), span));
-    else if (strcmp(buffer, "for") == 0) tokenlist_add(lexer->tokens, make_token(TOKEN_FOR, imp_arena_strdup(arena, buffer), span));
-    else if (strcmp(buffer, "then") == 0) tokenlist_add(lexer->tokens, make_token(TOKEN_THEN, imp_arena_strdup(arena, buffer), span));
-    else if (strcmp(buffer, "end") == 0) tokenlist_add(lexer->tokens, make_token(TOKEN_END, imp_arena_strdup(arena, buffer), span));
-    else if (strcmp(buffer, "else") == 0) tokenlist_add(lexer->tokens, make_token(TOKEN_ELSE, imp_arena_strdup(arena, buffer), span));
-    else tokenlist_add(lexer->tokens, make_token(TOKEN_IDENTIFIER, imp_arena_strdup(arena, buffer), span));
+    if (buffer == "if") tokenlist_add(lexer->tokens, make_token(TOKEN_IF, imp_arena_strdup(arena, buffer.data()), span));
+    else if (buffer == "for") tokenlist_add(lexer->tokens, make_token(TOKEN_FOR, imp_arena_strdup(arena, buffer.data()), span));
+    else if (buffer == "then") tokenlist_add(lexer->tokens, make_token(TOKEN_THEN, imp_arena_strdup(arena, buffer.data()), span));
+    else if (buffer == "end") tokenlist_add(lexer->tokens, make_token(TOKEN_END, imp_arena_strdup(arena, buffer.data()), span));
+    else if (buffer == "else") tokenlist_add(lexer->tokens, make_token(TOKEN_ELSE, imp_arena_strdup(arena, buffer.data()), span));
+    else tokenlist_add(lexer->tokens, make_token(TOKEN_IDENTIFIER, imp_arena_strdup(arena, buffer.data()), span));
 }
 void lexer_parse_string(Lexer *lexer) {
     lexer_advance(lexer);

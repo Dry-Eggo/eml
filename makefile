@@ -2,9 +2,9 @@ PROJECT          := eml
 SOURCE_DIRECTORY := src
 MISC             := $(SOURCE_DIRECTORY)/misc
 TEST_DIR         := tests
-ENTRY            := $(SOURCE_DIRECTORY)/main.c
-CSRC             := $(shell find $(SOURCE_DIRECTORY) -type f -name "*.c" ! -name "main.c")
-CPPSRC           := $(wildcard $(MISC)/*.cpp)
+ENTRY            := $(SOURCE_DIRECTORY)/main.cpp
+CSRC             := $(shell find $(SOURCE_DIRECTORY) -type f -name "*.c")
+CPPSRC           := $(wildcard $(MISC)/*.cpp $(SOURCE_DIRECTORY)/*.cpp)
 SRC              := $(CSRC) $(CPPSRC)
 OUT_DIRECTORY    := bin
 TARGET           := $(OUT_DIRECTORY)/$(PROJECT)
@@ -13,7 +13,7 @@ OBJ              := $(addprefix bin/, $(OBJ_NAMES:.c=.o))
 OBJ              := $(OBJ:.cpp=.o)
 
 MOBJ             := $(patsubst $(SOURCE_DIRECTORY)/%.c, $(OUT_DIRECTORY)/%.o, $(CPPSRC))
-FLAGS            := -Wall
+FLAGS            := -g
 
 define MAP_OBJ_TO_SRC $(foreach src, $(SRC), $(eval SRCS_by_OBJ_bin/$(notdir $(src:.c=.o)) := $(src)) $(eval SRCS_by_OBJ_bin/$(notdir $(src:.cpp=.o)) := $(src)))
 endef
@@ -24,9 +24,9 @@ TEST_FILES      := $(wildcard $(TEST_DIR)/*.eml)
 
 all: $(TARGET)
 
-$(TARGET): $(OBJ) $(OUT_DIRECTORY)/main.o
+$(TARGET): $(OBJ)
 	@echo "\033[33mBuilding $@\033[0m"
-	@$(CXX) -o $@ $(OUT_DIRECTORY)/main.o $(OBJ) $(FLAGS)
+	@$(CXX) -o $@ $(OBJ) $(FLAGS)
 
 $(OUT_DIRECTORY)/main.o:
 	@echo "\033[33mBuilding $@\033[0m"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "enums.h"
+#include <string>
 
 typedef struct
 {
@@ -12,10 +13,10 @@ typedef struct
 typedef struct
 {
     TokenKind    kind;
-    const char*  lexme;
+    std::string  lexme;
     Span         span;
 } Token;
 
-Token make_token   (TokenKind kind, const char* lexme, Span span);
+Token make_token   (TokenKind kind, std::string lexme, Span span);
 Span  make_span    (int line, int column, int colend);
 Span  merge_span   (Span s1, Span s2);

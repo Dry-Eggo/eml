@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "options.h"
 #include "imp_alloc.h"
-#include "interpreter.h"
+#include "interpreter.hpp"
 
 ImpArena *arena = NULL;
 
@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 {
     arena = imp_arena_init(1024);
     
-    Options opt = {0};
+    Options opt;
     Error* e    = init_options(&opt, argc, argv);
     if (e)
     {

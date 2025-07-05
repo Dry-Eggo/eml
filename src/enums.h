@@ -62,17 +62,17 @@ typedef enum
 
 typedef enum
 {
-    EXPR_ASSIGN,
-    EXPR_CALL,
-    EXPR_IDENT,
-    EXPR_STRING,
-    EXPR_INT,
-    EXPR_FLOAT,
-    EXPR_FIELD_ACCESS,
-    EXPR_BINOP,
-    EXPR_BRACE_BODY,
-    EXPR_BODY,
-    EXPR_IF,
+    EXPR_ASSIGN = 0,
+    EXPR_CALL = 1,
+    EXPR_IDENT = 2,
+    EXPR_STRING = 3,
+    EXPR_INT = 4,
+    EXPR_FLOAT = 5,
+    EXPR_FIELD_ACCESS = 6,
+    EXPR_BINOP = 7,
+    EXPR_BRACE_BODY = 8,
+    EXPR_BODY = 9,
+    EXPR_IF = 10,
 } ExprKind;
 
 typedef enum

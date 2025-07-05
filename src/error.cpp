@@ -3,7 +3,7 @@
 
 Error* make_error     (ErrorKind kind, const char* message, int code)
 {
-    Error* e   = imp_arena_alloc(arena, sizeof(Error));
+    Error* e   = (Error*)imp_arena_alloc(arena, sizeof(Error));
     e->message = message;
     e->code    = code;
     e->kind    = kind;

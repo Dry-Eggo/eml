@@ -2,10 +2,18 @@
 
 #include "../token.h"
 #include <stdbool.h>
+#include <string>
+#include <memory>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <filesystem>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+using namespace std;
 
 typedef struct TokenList TokenList;
 TokenList *make_tokenlist();
@@ -14,10 +22,14 @@ Token tokenlist_get(TokenList *, int i);
 int tokenlist_size(TokenList *);
 
 struct AstNode;
-typedef struct AstList AstList;
+using AstPtr = std::unique_ptr<AstNode>;
+
+struct AstList {
+    vector<AstPtr> nodes;
+};
+
 AstList *make_astlist();
-void astlist_add(struct AstList *, struct AstNode *node);
-struct AstNode *astlist_get(struct AstList *, int i);
+void astlist_add(struct AstList *, AstPtr node);
 int astlist_size(struct AstList *);
 
 /* ------------------ Runtime ----------------- */
@@ -32,7 +44,7 @@ typedef struct StackFrame StackFrame;
 typedef struct StackList StackList;
 typedef struct SourceManger SourceManger;
 
-SourceManger* create_sourcemanager(const char* source);
+SourceManger* create_sourcemanager(std::string source);
 const char*   sm_getline(SourceManger* sm, int line);
 
 StackList *create_stacklist();
@@ -66,6 +78,3 @@ char *readAllFile(const char* path);
 bool file_exists(const char* path);
 /* ------------------------------------------- */
 
-#ifdef __cplusplus
-}
-#endif

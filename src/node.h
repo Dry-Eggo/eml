@@ -2,40 +2,52 @@
 #include <stdbool.h>
 #include "enums.h"
 #include "misc/containers.h"
+#include <variant>
+
+
+#define uniq std::unique_ptr
+#define mk_uniq(type, ...) std::make_unique<type>(__VA_ARGS__)
 
 struct ExprBinding {
     bool	     is_mut;
-    struct AstNode*  lhs;
-    struct AstNode*  value;
+    AstPtr  lhs;
+    AstPtr  value;
+    ExprBinding(bool im, AstPtr l, AstPtr v) : is_mut(im), lhs(std::move(l)), value(std::move(v)) {}
 };
 
 struct ExprStringLit {
-    const char* literal;
+    std::string literal;
+    ExprStringLit(std::string l): literal(std::move(l)) { }
 };
 
 struct ExprIntLit {
     int         literal;
+    ExprIntLit(int v): literal(v) {}
 };
 
 
 struct ExprCall {
-    struct AstNode* callee;
+    AstPtr callee;
     AstList*        args;
+    ExprCall(AstPtr c, AstList* a): callee(std::move(c)), args(std::move(a)) {}
 };
 
 struct ExprIdent {
-    const char*   identifier;
+    std::string   identifier;
+    ExprIdent(std::string name): identifier(name) {}
 };
 
 struct ExprFieldAccess {
-    struct AstNode*  base;
-    struct AstNode*  field;
+    AstPtr  base;
+    AstPtr  field;
+    ExprFieldAccess(AstPtr b, AstPtr f): base(std::move(b)), field(std::move(f)) {}
 };
 
 struct ExprBinaryOp {
-    struct AstNode*  lhs;
-    struct AstNode*  rhs;
+    AstPtr  lhs;
+    AstPtr  rhs;
     BinaryOp         op;
+    ExprBinaryOp(AstPtr l, AstPtr r, BinaryOp op): lhs(std::move(l)), rhs(std::move(r)), op(op) {}
 };
 
 struct ExprBraceBody {
@@ -53,38 +65,36 @@ struct ExprBraceBody {
 // 9 | 
 struct ExprBody {
     AstList* body;
+    ExprBody(AstList* b): body(std::move(b)) {}
 };
 
 struct ExprIf {
-    struct AstNode*  cond;
-    struct AstNode* then_body;
-    struct AstNode* else_body;
+    AstPtr  cond;
+    AstPtr then_body;
+    AstPtr else_body;
+    ExprIf(AstPtr c, AstPtr t, AstPtr e): cond(std::move(c)), then_body(std::move(t)), else_body(std::move(e)) {}
+};
+
+struct ExprNop {
+    ExprNop(int i) {}
 };
 
 typedef struct AstNode {
     ExprKind kind;
     Span     span;
-    union {
-       	struct ExprBinding     binding;
-       	struct ExprCall        call;
-       	struct ExprStringLit   stringlit;
-       	struct ExprIntLit      intlit;
-       	struct ExprIdent       identifier;
-       	struct ExprFieldAccess faccess;
-       	struct ExprBinaryOp    binop;
-	struct ExprIf          if_expr;
-	struct ExprBody        body;
-	struct ExprBraceBody   b_body;
-    };
+    std::variant<
+     uniq<ExprBinding>, uniq<ExprCall>, uniq<ExprStringLit>, uniq<ExprIntLit>, uniq<ExprIdent>, uniq<ExprFieldAccess>, uniq<ExprBinaryOp>, uniq<ExprIf>, uniq<ExprBody>, uniq<ExprNop>, uniq<ExprBraceBody>>
+    data;
+    AstNode(ExprKind kind, Span s): kind(kind), span(s), data(mk_uniq(ExprNop, 0)) {}	 
 } AstNode;
 
-AstNode* make_binding_node(AstNode* , AstNode* expr, bool mut, Span s);
-AstNode* make_call_node   (AstNode* callee,  AstList   * args, Span s);
-AstNode* make_field_access(AstNode* base,  AstNode* field ,    Span s);
-AstNode* make_binary_op   (AstNode* lhs,  AstNode* rhs, BinaryOp op, Span s);
-AstNode* make_string_node (const char* string, Span s);
-AstNode* make_int_node    (int         value, Span s);
-AstNode* make_ident_node  (const char* name, Span s);
-AstNode* make_body_node   (AstList* b, Span s);
-AstNode* make_brace_body_node  (AstList* b, Span s);
-AstNode* make_if_node(AstNode* cond, AstNode* then, AstNode* else_, Span s);
+AstPtr make_binding_node(AstPtr , AstPtr expr, bool mut, Span s);
+AstPtr make_call_node   (AstPtr callee,  AstList   * args, Span s);
+AstPtr make_field_access(AstPtr base,  AstPtr field ,    Span s);
+AstPtr make_binary_op   (AstPtr lhs,  AstPtr rhs, BinaryOp op, Span s);
+AstPtr make_string_node (std::string string, Span s);
+AstPtr make_int_node    (int         value, Span s);
+AstPtr make_ident_node  (std::string name, Span s);
+AstPtr make_body_node   (AstList* b, Span s);
+AstPtr make_brace_body_node  (AstList* b, Span s);
+AstPtr make_if_node(AstPtr cond, AstPtr then, AstPtr else_, Span s);

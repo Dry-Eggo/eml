@@ -1,6 +1,6 @@
 #include "token.h"
 
-Token make_token   (TokenKind kind, const char* lexme, Span span)
+Token make_token   (TokenKind kind, std::string lexme, Span span)
 {
     return (Token) {kind, lexme, span};
 }

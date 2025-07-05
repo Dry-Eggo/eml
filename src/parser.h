@@ -12,10 +12,10 @@ typedef struct {
     Options*    options;
     AstList*    program;
     TokenList*  tokens;
-    const char* source;
+    std::string source;
 } Parser;
 
-Parser*    parser_init        (Options* options, const char* source, TokenList* list);
+Parser*    parser_init        (Options* options, std::string source, TokenList* list);
 Token      parser_peek        (Parser*  parser);
 Token      parser_now         (Parser*  parser);
 void       parser_advance     (Parser*  parser);
@@ -23,11 +23,11 @@ void       parser_expect      (Parser*  parser, TokenKind k);
 bool       parser_match       (Parser*  parser, TokenKind k);
 void       parser_parse       (Parser*  parser);
 
-AstNode*   parse_expr         (Parser*  parser);
-AstNode*   parse_atom         (Parser*  parser);
-AstNode*   parse_additive     (Parser*  parser);
-AstNode*   parse_term         (Parser*  parser);
-AstNode*   parse_postfix      (Parser*  parser);
-AstNode*   parse_logical_or   (Parser*  parser);
-AstNode*   parse_logical_and  (Parser*  parser);
-AstNode*   parse_body         (Parser*  parser);
+AstPtr   parse_expr         (Parser*  parser);
+AstPtr   parse_atom         (Parser*  parser);
+AstPtr   parse_additive     (Parser*  parser);
+AstPtr   parse_term         (Parser*  parser);
+AstPtr   parse_postfix      (Parser*  parser);
+AstPtr   parse_logical_or   (Parser*  parser);
+AstPtr   parse_logical_and  (Parser*  parser);
+AstPtr   parse_body         (Parser*  parser);

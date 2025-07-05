@@ -4,11 +4,13 @@ print("---------------- If Else Test ----------------\n");
 if 0 then:
    core.print("If Statement with body\n");
 else:
-   core.print("Else Statement\n");
+   core.print("Here\n");
 end
 
 if 1 then:
-   core.print("Anther Successful if\n");
+   core.print("Success If\n");
+else:
+   core.print("Nope. Not here\n");
 end
 
 print("----------------------------------------------\n");

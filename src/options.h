@@ -13,3 +13,4 @@ typedef struct
 } Options;
 
 Error* init_options(Options * opt, int argc, char** argv);
+

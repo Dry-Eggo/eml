@@ -3,14 +3,7 @@
 #include "../builtins.h"
 #include "../global.h"
 #include "../types.h"
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <filesystem>
-#include <string>
-#include <unordered_map>
-#include <vector>
+
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -44,18 +37,12 @@ bool file_exists(const char* path) {
     return (fs::exists(path));
 }
 
-struct AstList {
-    vector<struct AstNode *> nodes;
-};
-
-AstList *make_astlist() {
+AstList* make_astlist() {
     AstList *tl = (AstList *)imp_arena_alloc(arena, sizeof(AstList));
     return tl;
 }
 
-void astlist_add(AstList *t, struct AstNode *node) { t->nodes.push_back(node); }
-
-struct AstNode *astlist_get(AstList *t, int n) { return t->nodes.at(n); }
+void astlist_add(AstList *t, AstPtr node) { t->nodes.push_back(std::move(node)); }
 
 int astlist_size(AstList *t) { return t->nodes.size(); }
 
@@ -131,8 +118,7 @@ Module *load_system_module(Env *env, const char *name) {
     Module *mod = create_module(name);
     if (strcmp(name, "core") == 0) {
 	mod->name = "core";
-	mod->exports["println"] =
-        value_make_native_fn("println", -1, builtin_println);
+	mod->exports["println"] = value_make_native_fn("println", -1, builtin_println);
 	mod->exports["print"] = value_make_native_fn("print", -1, builtin_print);
 	mod->exports["readFile"] = value_make_native_fn("readFile", 1, builtin_readFile);
     }
@@ -166,9 +152,11 @@ StackFrame *create_stackframe(Span span, const char *callee_name) {
     f->callee_span = span;
     return f;
 }
+
 void push_stack_frame(StackList *stl, StackFrame *frame) {
     stl->stackframes.push_back(frame);
 }
+
 StackFrame *pop_stack_frame(StackList *stl) {
     StackFrame *s = stl->stackframes.back();
     stl->stackframes.pop_back();
@@ -194,7 +182,7 @@ struct SourceManger {
     }
 };
 
-SourceManger *create_sourcemanager(const char *source) {
+SourceManger *create_sourcemanager(std::string source) {
     void *mem = imp_arena_alloc(arena, sizeof(SourceManger));
     return new (mem) SourceManger(source);
 }

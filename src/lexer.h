@@ -4,13 +4,14 @@
 #include "options.h"
 #include "token.h"
 #include "./misc/containers.h"
+#include <string>
 
 typedef struct
 {
     int          cursor;
     int          line;
     int          col;
-    const char*  source;
+    std::string       source;
     Options*     options;
     TokenList*   tokens;
 } Lexer;

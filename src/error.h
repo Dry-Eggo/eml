@@ -12,4 +12,5 @@ typedef struct
 
 Error* make_error     (ErrorKind kind, const char* message, int code);
 void   early_fail     (Error* e);
-void   maybe_faile    (Error* e);
+void   maybe_fail    (Error* e);
+
