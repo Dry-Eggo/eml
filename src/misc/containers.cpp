@@ -37,17 +37,8 @@ bool file_exists(const char* path) {
     return (fs::exists(path));
 }
 
-AstList* make_astlist() {
-    AstList *tl = (AstList *)imp_arena_alloc(arena, sizeof(AstList));
-    return tl;
-}
-
-void astlist_add(AstList *t, AstPtr node) { t->nodes.push_back(std::move(node)); }
-
-int astlist_size(AstList *t) { return t->nodes.size(); }
-
 struct ValueList {
-    vector<struct Value_ *> values;
+    vector<ValueRef> values;
 };
 
 ValueList *make_valuelist() {
@@ -55,11 +46,11 @@ ValueList *make_valuelist() {
     return tl;
 }
 
-void valuelist_add(ValueList *t, struct Value_ *value) {
+void valuelist_add(ValueList *t, ValueRef value) {
     t->values.push_back(value);
 }
 
-struct Value_ *valuelist_get(ValueList *t, int n) { return t->values.at(n); }
+ValueRef valuelist_get(ValueList *t, int n) { return t->values.at(n); }
 
 int valuelist_size(ValueList *t) { return t->values.size(); }
 
@@ -67,7 +58,7 @@ int valuelist_size(ValueList *t) { return t->values.size(); }
 
 struct Module {
     const char *name;
-    unordered_map<string, Value_ *> exports;
+    unordered_map<string, ValueRef> exports;
 };
 
 Module *create_module(const char *name) {
@@ -77,7 +68,7 @@ Module *create_module(const char *name) {
 
 struct Env {
     Env *parent;
-    unordered_map<string, Value_ *> vars;
+    unordered_map<string, ValueRef> vars;
     unordered_map<string, Module *> modules;
 };
 
@@ -96,11 +87,11 @@ bool has_var(Env *e, const char *name) {
     return (it != e->vars.end());
 }
 
-Value_ *get_var(Env *e, const char *name) {
+ValueRef get_var(Env *e, const char *name) {
     // Todo: Check
     return e->vars[name];
 }
-void set_var(Env *e, const char *name, Value_ *value) { e->vars[name] = value; }
+void set_var(Env *e, const char *name, ValueRef value) { e->vars[name] = value; }
 
 void extend_env(Env *e, Env *e2) {
     for (const auto &pair : e2->vars) {

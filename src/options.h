@@ -10,6 +10,7 @@ typedef struct
     RunOption   run_option;
     const char* infile;
     const char* program_path;
+    bool  show_ast;
 } Options;
 
 Error* init_options(Options * opt, int argc, char** argv);

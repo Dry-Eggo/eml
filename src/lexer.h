@@ -17,6 +17,9 @@ typedef struct
 } Lexer;
 
 Lexer*  lexer_init         (Options* options);
+Lexer*  lexer_init_repl    (Options* opt);
+void    set_source         (Lexer*, std::string source);
+TokenList*    lexer_lex_line     (Lexer* lexer);
 char    lexer_peek         (Lexer* lexer);
 char    lexer_now          (Lexer* lexer);
 char    lexer_advance      (Lexer* lexer);

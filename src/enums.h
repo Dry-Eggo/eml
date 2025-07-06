@@ -20,13 +20,17 @@ typedef enum
     // built-ins
     TOKEN_KINT,      // as a word
     TOKEN_KSTRING,
-
+    TOKEN_KBOOL,
+    TOKEN_KNIL,
+    
     // values
     TOKEN_INT,
     TOKEN_STRING,
     TOKEN_FLOAT,
     TOKEN_CHAR,
     TOKEN_IDENTIFIER,
+    TOKEN_TRUE,
+    TOKEN_FALSE,
     
     // keyword
     TOKEN_IF,
@@ -40,6 +44,7 @@ typedef enum
 
     // operators
     TOKEN_EQ,
+    TOKEN_EQEQ,
     TOKEN_COLEQ, // :=
     TOKEN_ADD,
     TOKEN_SUB,
@@ -73,6 +78,8 @@ typedef enum
     EXPR_BRACE_BODY = 8,
     EXPR_BODY = 9,
     EXPR_IF = 10,
+    EXPR_BOOL = 11,
+    EXPR_NIL  = 12,
 } ExprKind;
 
 typedef enum
@@ -81,15 +88,18 @@ typedef enum
     BINOP_SUB,
     BINOP_MUL,
     BINOP_DIV,
+    BINOP_EQ,
 } BinaryOp;
 
 typedef enum
 {
     VALUE_STRING,
     VALUE_INT,
+    VALUE_BOOL,
     VALUE_ERROR,
     VALUE_LIST,
     VALUE_NIL,
+    VALUE_RNIL,
     VALUE_NATIVEFN,
     VALUE_VARIABLE,
     VALUE_MODULE,

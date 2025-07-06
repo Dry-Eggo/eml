@@ -11,6 +11,8 @@ extern void show_help(Options opt)
     fprintf(stdout, "option:\n");
     fprintf(stdout, "    -i, --input            specify input file or <stdin> for repl\n");
     fprintf(stdout, "    -h, --help             show this help message\n");
+    fprintf(stdout, "    -ast, --debug-ast      print the parsed ast and exit\n");
+    fprintf(stdout, "    -r, --repl             launch the repl\n");
 }
 
 int main(int argc, char** argv)
@@ -30,6 +32,7 @@ int main(int argc, char** argv)
 	    show_help(opt);
 	    break;
 	case RUN_FILE:
+	case RUN_REPL:
 	    interpret(&opt);
 	    break;
 	default:

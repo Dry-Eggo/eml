@@ -10,7 +10,7 @@ typedef struct {
     int         cursor;
     int         token_count;
     Options*    options;
-    AstList*    program;
+    AstList    program;
     TokenList*  tokens;
     std::string source;
 } Parser;
@@ -30,4 +30,5 @@ AstPtr   parse_term         (Parser*  parser);
 AstPtr   parse_postfix      (Parser*  parser);
 AstPtr   parse_logical_or   (Parser*  parser);
 AstPtr   parse_logical_and  (Parser*  parser);
+AstPtr   parse_equality     (Parser*  parser);
 AstPtr   parse_body         (Parser*  parser);

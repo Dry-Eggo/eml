@@ -1,4 +1,10 @@
-
 message := "Hello World\n";
 message = "Just Hello\n";
 print(message);
+
+# multiline string
+
+mls := **
+   foo
+**;
+print(mls);

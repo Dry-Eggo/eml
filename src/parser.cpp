@@ -9,7 +9,6 @@ Parser *parser_init(Options *options, std::string source, TokenList *list) {
     Parser *parser = (Parser*)imp_arena_alloc(arena, sizeof(Parser));
     parser->options = options;
     parser->cursor = 0;
-    parser->program = make_astlist();
     parser->source = source;
     parser->tokens = list;
     parser->token_count = tokenlist_size(parser->tokens);
@@ -66,7 +65,7 @@ void parser_parse(Parser *parser) {
 	default: {
 	    auto expr = parse_expr(parser);
 	    if (expr->kind != EXPR_IF) parser_expect(parser, TOKEN_SEMI);
-	    astlist_add(parser->program, std::move(expr));
+	    parser->program.push_back(std::move(expr));
 	    program_size++;
 	} break;
     }
@@ -75,14 +74,14 @@ void parser_parse(Parser *parser) {
 
 AstPtr parse_body(Parser*  parser) {
     Span start = pnow(parser).span;
-    AstList* body = make_astlist();
+    AstList body = {};
     while (!parser_match(parser, TOKEN_EOF) && !parser_match(parser, TOKEN_END) && !parser_match(parser, TOKEN_ELSE)) {
 	auto expr = parse_expr(parser);
 	if (expr->kind != EXPR_IF) parser_expect(parser, TOKEN_SEMI);
-	astlist_add(body, std::move(expr));
+	body.push_back(std::move(expr));
     }
     Span end = pnow(parser).span;
-    return make_body_node(body, merge_span(start, end));
+    return make_body_node(std::move(body), merge_span(start, end));
 }
 
 AstPtr parse_expr(Parser *parser) {
@@ -95,7 +94,20 @@ AstPtr parse_logical_or(Parser *parser) {
     return lhs;
 }
 AstPtr parse_logical_and(Parser *parser) {
+    auto lhs = parse_equality(parser);
+    return lhs;
+}
+
+AstPtr parse_equality (Parser* parser) {
+    Span start = pnow(parser).span;
     auto lhs = parse_additive(parser);
+    while (parser_match(parser, TOKEN_EQEQ)) {
+	auto op = BINOP_EQ;
+	parser_advance(parser);
+	Span end = pnow(parser).span;
+	auto rhs = parse_expr(parser);
+	lhs = make_binary_op(std::move(lhs), std::move(rhs), op, merge_span(start, end));
+    }
     return lhs;
 }
 
@@ -148,9 +160,9 @@ AstPtr parse_atom(Parser *parser) {
 	AstPtr ident_node = make_ident_node(identifier, start);
 	if (pnowk(parser) == TOKEN_OPEN_PAREN) {
 	    parser_advance(parser);
-	    AstList *args = make_astlist();
+	    AstList args = {};
 	    while (pnowk(parser) != TOKEN_CLOSE_PAREN) {
-		astlist_add(args, parse_expr(parser));
+		args.push_back(parse_expr(parser));
 		if (parser_match(parser, TOKEN_COMMA))
 		{
 		    parser_advance(parser);
@@ -163,6 +175,14 @@ AstPtr parse_atom(Parser *parser) {
 
 	return ident_node;
     }
+    
+    if (tok.kind == TOKEN_TRUE || tok.kind == TOKEN_FALSE) {
+	bool value = tok.kind == TOKEN_TRUE;
+	auto span  = tok.span;
+	parser_advance(parser);
+	return make_bool_node(value, span);
+    }
+    
     if (tok.kind == TOKEN_IF) {
 	Span start = tok.span;
 	parser_advance(parser);
@@ -181,8 +201,8 @@ AstPtr parse_atom(Parser *parser) {
 	    parser_advance(parser);
 	    if (parser_match(parser, TOKEN_IF)) {
 		AstPtr nested_if = parse_expr(parser);
-		AstList* b_ = make_astlist();
-		astlist_add(b_, std::move(nested_if));
+		AstList b_ = {};
+		b_.push_back(std::move(nested_if));
 		Span end = pnow(parser).span;
 		else_ = make_body_node(std::move(b_), merge_span(start, end));
 	    } else {
@@ -208,6 +228,12 @@ AstPtr parse_atom(Parser *parser) {
 	return make_int_node(value, span_start);
     }
 
+    if (tok.kind == TOKEN_KNIL) {
+	Span span_start = tok.span;
+	parser_advance(parser);
+	return make_nil_node(span_start);
+    }    
+    
     char buf[64];
     sprintf(buf, "%s:%d:%d error: Unexpected token: '%s'", parser->options->infile,
     pnow(parser).span.line, pnow(parser).span.column, pnow(parser).lexme.c_str());

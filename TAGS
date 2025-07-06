@@ -1,0 +1,161 @@
+
+src/node.cpp,372
+AstPtr make_ident_node(9,146
+AstPtr make_binding_node(15,318
+AstPtr make_call_node(21,544
+AstPtr make_field_access(27,744
+AstPtr make_binary_op(33,969
+AstPtr make_string_node(39,1192
+AstPtr make_int_node(45,1385
+AstPtr make_body_node(51,1548
+AstPtr make_if_node(57,1723
+AstPtr make_bool_node(63,1962
+std::string str_node(71,2168
+std::string repr_node(129,4307
+
+src/builtins.cpp,98
+ValueRef builtin_println(10,153
+ValueRef builtin_print(16,281
+ValueRef builtin_readFile(28,576
+
+src/options.cpp,90
+#define sflag(8,105
+#define lflag(9,155
+char* shift(11,244
+Error* init_options(16,301
+
+src/token.cpp,71
+Token make_token 3,20
+Span  make_span 8,131
+Span  merge_span 13,233
+
+src/lexer.cpp,296
+#define TMP_BUFFER_SIZE 10,159
+Lexer *lexer_init(lexer_init12,188
+char lexer_peek(25,518
+char lexer_now(32,669
+char lexer_advance(39,812
+void lexer_lex(50,1002
+void lexer_skip_ws(153,4181
+void lexer_parse_word(159,4288
+void lexer_parse_string(178,5649
+void lexer_parse_number(201,6294
+
+src/main.cpp,74
+ImpArena *arena arena6,91
+extern void show_help(8,116
+int main(16,430
+
+src/error.cpp,50
+Error* make_error 4,40
+void   early_fail 13,265
+
+src/interpreter.cpp,509
+#define vu(13,228
+Runtime *runtime;runtime15,268
+std::string source_file;16,286
+Options *options;options17,311
+void interpret(19,330
+Error *init_runtime(init_runtime57,1499
+Error *init_env(init_env71,1939
+ValueRef eval_node(81,2196
+ValueRef eval_field_access(94,2593
+ValueRef eval_assign(121,3367
+ValueRef generate_value(143,4235
+ValueList *make_values(make_values186,5614
+ValueRef eval_body(197,5891
+ValueRef eval_if(214,6300
+ValueRef eval_call(227,6676
+void _eml_runtime_error(272,8253
+
+src/parser.cpp,512
+#define pnowk(5,58
+#define pnow(6,94
+Parser *parser_init(parser_init8,125
+Token parser_peek(20,527
+Token parser_now(28,795
+void parser_advance(35,1009
+void parser_expect(37,1068
+bool parser_match(48,1422
+void parser_parse(55,1542
+AstPtr parse_body(76,2076
+AstPtr parse_expr(88,2538
+AstPtr parse_logical_or(93,2643
+AstPtr parse_logical_and(97,2745
+AstPtr parse_equality 102,2846
+AstPtr parse_additive(115,3226
+AstPtr parse_term(128,3683
+AstPtr parse_postfix(133,3776
+AstPtr parse_atom(155,4511
+
+src/types.cpp,398
+ValueRef value_make_int(6,81
+ValueRef value_make_string(11,188
+ValueRef value_make_variable(16,343
+ValueRef value_make_bool(21,536
+ValueRef value_make_nil(26,650
+ValueRef value_make_native_fn(34,840
+ValueRef value_make_module(40,1083
+ValueRef value_make_error(45,1258
+ValueRef value_add(50,1422
+bool value_istruthy(61,1802
+ValueRef value_eq(77,2196
+std::string value_to_string(103,3138
+
+src/misc/containers.cpp,2347
+struct TokenList 11,151
+    vector<Token> tokens;TokenList::tokens12,170
+TokenList *make_tokenlist(make_tokenlist15,200
+void tokenlist_add(20,324
+Token tokenlist_get(22,399
+int tokenlist_size(24,469
+char *readAllFile(readAllFile28,542
+bool file_exists(36,742
+AstList* make_astlist(40,813
+void astlist_add(45,927
+int astlist_size(47,1011
+struct ValueList 49,1069
+    vector<ValueRef> values;ValueList::values50,1088
+ValueList *make_valuelist(make_valuelist53,1121
+void valuelist_add(58,1245
+ValueRef valuelist_get(62,1331
+int valuelist_size(64,1404
+struct Module 68,1479
+    const char *name;Module::name69,1495
+    unordered_map<Module::unordered_map70,1517
+    unordered_map<string, ValueRef> exports;Module::exports70,1517
+Module *create_module(create_module73,1566
+struct Env 78,1698
+    Env *parent;Env::parent79,1711
+    unordered_map<Env::unordered_map80,1728
+    unordered_map<string, ValueRef> vars;Env::vars80,1728
+    unordered_map<Env::unordered_map81,1770
+    unordered_map<string, Module *> modules;Env::modules81,1770
+Env *create_env(create_env84,1819
+bool has_var(94,2016
+ValueRef get_var(99,2128
+void set_var(103,2220
+void extend_env(105,2303
+Env *module_get_exports(module_get_exports111,2410
+Module *load_system_module(load_system_module117,2525
+struct ModuleTable 129,2973
+    unordered_map<ModuleTable::unordered_map130,2994
+    unordered_map<string, Module *> modules;ModuleTable::modules130,2994
+struct StackFrame 133,3043
+    Span callee_span;StackFrame::callee_span134,3063
+    const char *callee_name;StackFrame::callee_name135,3085
+struct StackList 138,3118
+    vector<StackFrame *> stackframes;StackList::stackframes139,3137
+StackList *create_stacklist(create_stacklist142,3179
+int stacklist_size(147,3307
+StackFrame *create_stackframe(create_stackframe149,3379
+void push_stack_frame(156,3603
+StackFrame *pop_stack_frame(pop_stack_frame160,3704
+StackFrame *peek_stack_frame(peek_stack_frame166,3845
+const char *get_stackframe_name(get_stackframe_name170,3931
+Span get_stackframe_span(171,4005
+struct SourceManger 173,4073
+    vector<string> lines;SourceManger::lines174,4095
+    SourceManger(SourceManger::SourceManger175,4121
+SourceManger *create_sourcemanager(create_sourcemanager185,4269
+const char *sm_getline(sm_getline189,4433

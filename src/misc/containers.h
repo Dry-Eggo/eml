@@ -24,13 +24,6 @@ int tokenlist_size(TokenList *);
 struct AstNode;
 using AstPtr = std::unique_ptr<AstNode>;
 
-struct AstList {
-    vector<AstPtr> nodes;
-};
-
-AstList *make_astlist();
-void astlist_add(struct AstList *, AstPtr node);
-int astlist_size(struct AstList *);
 
 /* ------------------ Runtime ----------------- */
 
@@ -56,17 +49,19 @@ StackFrame *peek_stack_frame(StackList *stl);
 const char *get_stackframe_name(StackFrame *);
 Span get_stackframe_span(StackFrame *);
 
+using ValueRef = std::shared_ptr<Value_>;
+
 ValueList *make_valuelist();
-void valuelist_add(struct ValueList *, struct Value_ *node);
-struct Value_ *valuelist_get(struct ValueList *, int i);
+void valuelist_add(struct ValueList *, ValueRef node);
+ValueRef valuelist_get(struct ValueList *, int i);
 int valuelist_size(struct ValueList *);
 
 Env *create_env(Env *parent);
-struct Value_ *get_var(Env *e, const char *name);
-void set_var(Env *e, const char *name, struct Value_ *value);
+ValueRef get_var(Env *e, const char *name);
+void set_var(Env *e, const char *name, ValueRef value);
 void extend_env(Env *e, Env *e2);
 bool has_var(Env *e, const char *name);
-Module *get_module(Env *e, const char *name);
+sh(Module) get_module(Env *e, const char *name);
 Env *module_get_exports(Module *mod);
 Module *load_module_from_file(Env *e, const char *path);
 Module *load_system_module(Env *e, const char *name);

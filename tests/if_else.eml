@@ -1,3 +1,4 @@
+#! /home/dry/programming/c/eml/bin/eml -i
 
 print("---------------- If Else Test ----------------\n");
 
@@ -7,10 +8,16 @@ else:
    core.print("Here\n");
 end
 
-if 1 then:
+name = "Dry";
+age  = nil;
+
+# nil is falsy
+
+if age then:
    core.print("Success If\n");
 else:
    core.print("Nope. Not here\n");
 end
+
 
 print("----------------------------------------------\n");

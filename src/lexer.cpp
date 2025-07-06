@@ -48,6 +48,15 @@ char lexer_advance(Lexer *lexer) {
 }
 
 void lexer_lex(Lexer *lexer) {
+    /* Beginning of Source. Might be a Shebang */
+    if (lexer_now(lexer) == '#' && lexer_peek(lexer) == '!') {
+	lexer_advance(lexer);
+	lexer_advance(lexer);
+	while (lexer_now(lexer) != '\n') {
+	    lexer_advance(lexer);
+	}
+	if (lexer_now(lexer) == '\n') lexer_advance(lexer);
+    }
     while (lexer_now(lexer) != EOF) {
 	lexer_skip_ws(lexer);
 	if (lexer_now(lexer) == EOF) break;
@@ -64,6 +73,31 @@ void lexer_lex(Lexer *lexer) {
 	    lexer_parse_number(lexer);
 	    continue;
 	}
+	if (lexer_now(lexer) == '#') {
+	    while (lexer_now(lexer) != EOF && lexer_now(lexer) != '\n') {
+		lexer_advance(lexer);
+	    }
+	    continue;
+	}
+
+	if (lexer_now(lexer) == '*' && lexer_peek(lexer) == '*') {
+	    int sc = lexer->col;
+	    lexer_advance(lexer);
+	    lexer_advance(lexer);
+	    std::string buf;
+	    while (true) {
+		if (lexer_now(lexer) == '*' && lexer_peek(lexer) == '*') {
+		    lexer_advance(lexer);
+		    lexer_advance(lexer);
+		    break;
+		}
+		buf += lexer_advance(lexer);
+	    }
+	    auto span = make_span(lexer->line, sc, lexer->col-1);
+	    tokenlist_add(lexer->tokens, make_token(TOKEN_STRING, imp_arena_strdup(arena, buf.data()), span));
+	    continue;
+	}
+	
 	int sc = lexer->col;
 	switch (lexer_now(lexer)) {
 	case '(':
@@ -84,6 +118,11 @@ void lexer_lex(Lexer *lexer) {
 	    break;
 	case '=':
  	    lexer_advance(lexer);
+	    if (lexer_now(lexer) == '=') {
+		lexer_advance(lexer);
+		tokenlist_add(lexer->tokens, make_token(TOKEN_EQEQ, "==", make_span(lexer->line, sc, lexer->col - 1)));
+		break;
+	    }
 	    tokenlist_add(lexer->tokens, make_token(TOKEN_EQ, "=", make_span(lexer->line, sc, lexer->col - 1)));
 	    break;
 	case ':':
@@ -166,6 +205,9 @@ void lexer_parse_word(Lexer *lexer) {
     else if (buffer == "then") tokenlist_add(lexer->tokens, make_token(TOKEN_THEN, imp_arena_strdup(arena, buffer.data()), span));
     else if (buffer == "end") tokenlist_add(lexer->tokens, make_token(TOKEN_END, imp_arena_strdup(arena, buffer.data()), span));
     else if (buffer == "else") tokenlist_add(lexer->tokens, make_token(TOKEN_ELSE, imp_arena_strdup(arena, buffer.data()), span));
+    else if (buffer == "true") tokenlist_add(lexer->tokens, make_token(TOKEN_TRUE, imp_arena_strdup(arena, buffer.data()), span));
+    else if (buffer == "false") tokenlist_add(lexer->tokens, make_token(TOKEN_FALSE, imp_arena_strdup(arena, buffer.data()), span));
+    else if (buffer == "nil") tokenlist_add(lexer->tokens, make_token(TOKEN_KNIL, imp_arena_strdup(arena, buffer.data()), span));
     else tokenlist_add(lexer->tokens, make_token(TOKEN_IDENTIFIER, imp_arena_strdup(arena, buffer.data()), span));
 }
 void lexer_parse_string(Lexer *lexer) {
@@ -201,4 +243,25 @@ void lexer_parse_number(Lexer *lexer) {
     }
     buf[inx] = '\0';
     tokenlist_add(lexer->tokens, make_token(TOKEN_INT, imp_arena_strdup(arena, buf), make_span(line, sc, lexer->col-1)));
+}
+
+Lexer*  lexer_init_repl    (Options* opt) {
+    Lexer *lexer = (Lexer*)imp_arena_alloc(arena, sizeof(Lexer));
+    lexer->options = opt;
+    lexer->cursor = 0;
+    lexer->line = 1;
+    lexer->col = 1;
+    lexer->tokens = make_tokenlist();
+    return lexer;
+}
+void set_source (Lexer* lexer, std::string source) {
+    lexer->cursor = 0;
+    lexer->col = 1;
+    lexer->source = source;
+}
+
+
+TokenList* lexer_lex_line(Lexer* lexer) {
+    lexer_lex(lexer);
+    return lexer->tokens;
 }
